@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="baloon">
+        <file>baloons.jpg</file>
+        <file>baloons.jpg</file>
+    </qresource>
+</RCC>

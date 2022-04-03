@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+    <class>MainWindow</class>
+    <widget class="QMainWindow" name="MainWindow">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>751</width>
+                <height>466</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>MainWindow</string>
+        </property>
+        <property name="styleSheet">
+            <string notr="true">background-color: rgb(255, 210, 93);</string>
+        </property>
+        <widget class="QWidget" name="centralwidget">
+            <widget class="Line" name="line">
+                <property name="geometry">
+                    <rect>
+                        <x>-220</x>
+                        <y>0</y>
+                        <width>441</width>
+                        <height>471</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">background-color: rgb(21, 82, 93);
+                        background-color: rgb(21, 84, 93);
+                    </string>
+                </property>
+                <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label">
+                <property name="geometry">
+                    <rect>
+                        <x>60</x>
+                        <y>10</y>
+                        <width>111</width>
+                        <height>121</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">
+                        background-image: url(:/logo/assets/logo3_1.png);
+                    </string>
+                </property>
+                <property name="text">
+                    <string/>
+                </property>
+                <property name="pixmap">
+                    <pixmap resource="../Resource/company_logo_blue.qrc">:/logo/assets/logo3_1.png</pixmap>
+                </property>
+                <property name="scaledContents">
+                    <bool>true</bool>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="Approval_btn">
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>160</y>
+                        <width>201</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">QPushButton {
+                        font: italic 18pt &quot;Goudy Old Style&quot;;
+                        background-color: rgb(255, 212, 93);
+                        color: rgb(21, 82, 93);
+                        border: 1px solid;
+                        border-radius: 15px;
+                        }
+                        QPushButton:hover {
+                        background-color:rgb(14, 54, 61);
+                        color:rgb(255,212,93);
+                        }
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Approval Messages</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="balance_btn">
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>210</y>
+                        <width>201</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">QPushButton {
+                        font: italic 18pt &quot;Goudy Old Style&quot;;
+                        background-color: rgb(255, 212, 93);
+                        color: rgb(21, 82, 93);
+                        border: 1px solid;
+                        border-radius: 15px;
+                        }
+                        QPushButton:hover {
+                        background-color:rgb(14, 54, 61);
+                        color:rgb(255,212,93);
+                        }
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Balance Overview</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="transfer_btn">
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>260</y>
+                        <width>201</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">QPushButton {
+                        font: italic 18pt &quot;Goudy Old Style&quot;;
+                        background-color: rgb(255, 212, 93);
+                        color: rgb(21, 82, 93);
+                        border: 1px solid;
+                        border-radius: 15px;
+                        }
+                        QPushButton:hover {
+                        background-color:rgb(14, 54, 61);
+                        color:rgb(255,212,93);
+                        }
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Transfer</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="transaction_btn">
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>310</y>
+                        <width>201</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">QPushButton {
+                        font: italic 18pt &quot;Goudy Old Style&quot;;
+                        background-color: rgb(255, 212, 93);
+                        color: rgb(21, 82, 93);
+                        border: 1px solid;
+                        border-radius: 15px;
+                        }
+                        QPushButton:hover {
+                        background-color:rgb(14, 54, 61);
+                        color:rgb(255,212,93);
+                        }
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Transaction History</string>
+                </property>
+            </widget>
+            <widget class="QPushButton" name="deposit_btn">
+                <property name="geometry">
+                    <rect>
+                        <x>10</x>
+                        <y>360</y>
+                        <width>201</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">QPushButton {
+                        font: italic 18pt &quot;Goudy Old Style&quot;;
+                        background-color: rgb(255, 212, 93);
+                        color: rgb(21, 82, 93);
+                        border: 1px solid;
+                        border-radius: 15px;
+                        }
+                        QPushButton:hover {
+                        background-color:rgb(14, 54, 61);
+                        color:rgb(255,212,93);
+                        }
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Edit transaction limit</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_7">
+                <property name="geometry">
+                    <rect>
+                        <x>230</x>
+                        <y>0</y>
+                        <width>231</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">color: rgb(21, 84, 93);
+                        font: 75 16pt &quot;Goudy Old Style&quot;;
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Parent Account Number :</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_8">
+                <property name="geometry">
+                    <rect>
+                        <x>230</x>
+                        <y>40</y>
+                        <width>231</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">color: rgb(21, 84, 93);
+                        font: 75 16pt &quot;Goudy Old Style&quot;;
+                    </string>
+                </property>
+                <property name="text">
+                    <string>Child Account Number :</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_9">
+                <property name="geometry">
+                    <rect>
+                        <x>470</x>
+                        <y>0</y>
+                        <width>231</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">color: rgb(21, 84, 93);
+                        font: 75 16pt &quot;Goudy Old Style&quot;;
+                    </string>
+                </property>
+                <property name="text">
+                    <string>9638527445</string>
+                </property>
+            </widget>
+            <widget class="QLabel" name="label_10">
+                <property name="geometry">
+                    <rect>
+                        <x>460</x>
+                        <y>40</y>
+                        <width>231</width>
+                        <height>41</height>
+                    </rect>
+                </property>
+                <property name="styleSheet">
+                    <string notr="true">color: rgb(21, 84, 93);
+                        font: 75 16pt &quot;Goudy Old Style&quot;;
+                    </string>
+                </property>
+                <property name="text">
+                    <string>2360588915</string>
+                </property>
+            </widget>
+            <widget class="QStackedWidget" name="stackedWidget">
+                <property name="geometry">
+                    <rect>
+                        <x>229</x>
+                        <y>100</y>
+                        <width>521</width>
+                        <height>361</height>
+                    </rect>
+                </property>
+                <widget class="QWidget" name="Approval_message_page">
+                    <widget class="QListView" name="msg_list_view">
+                        <property name="geometry">
+                            <rect>
+                                <x>30</x>
+                                <y>40</y>
+                                <width>461</width>
+                                <height>281</height>
+                            </rect>
+                        </property>
+                    </widget>
+                </widget>
+                <widget class="QWidget" name="page_2"/>
+            </widget>
+        </widget>
+    </widget>
+    <resources>
+        <include location="../Resource/company_logo_blue.qrc"/>
+        <include location="C:/WINDOWS/Resource/company_logo_blue.qrc"/>
+    </resources>
+    <connections/>
+</ui>
