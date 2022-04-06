@@ -144,7 +144,7 @@ def child_deposit(account_number, amount):
 
 
 # Child transaction request
-def child_transaction_request(username, password, amount, toAcc, parentAccNo):
+def child_transaction_request(username, password, amount, toAcc):
     try:
         # Get child details
         child_details = child_db.find_one({"username": username})
@@ -170,7 +170,7 @@ def child_transaction_request(username, password, amount, toAcc, parentAccNo):
                         "child_username": username,
                         "child_account_number": child_details["account_number"],
                         "amount": amount,
-                        "parent_account_number": parentAccNo,
+                        "parent_account_number": child_details["parent_account_number"],
                         "transaction_request_id": randint(1, 1000000000000),
                         "toAcc": toAcc
                     }
@@ -217,6 +217,24 @@ def child_transaction(username, amount, fromAcc, toAcc, approved_by):
     except Exception as e:
         print(e)
         return False, e
+
+
+# Verify if child account exists
+def verify_child_account(account_number):
+    child_details = child_db.find_one({"account_number": account_number})
+    if bool(child_details):
+        return True, child_details
+    else:
+        return False, "account dose not exist"
+
+
+# Verify if account exists
+def verify_parent_account(account_number):
+    parent_details = parent_db.find_one({"account_number": account_number})
+    if bool(parent_details):
+        return True, parent_details
+    else:
+        return False, "account dose not exist"
 
 
 def transactions_request_child(account_number):
