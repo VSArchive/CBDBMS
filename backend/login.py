@@ -15,21 +15,21 @@ def parent_login(username, password):
     try:
         parent = parent_db.find_one({"username": username})
         if bcrypt.checkpw(password.encode("utf-8"), parent["password"]):
-            return True
+            return True, parent
         else:
-            return False
+            return False, "incorrect password"
     except Exception as e:
         print(e)
-        return False
+        return False, e
 
 
 def child_login(username, password):
     try:
         child = child_db.find_one({"username": username})
         if bcrypt.checkpw(password.encode("utf-8"), child["password"]):
-            return True
+            return True, child
         else:
-            return False
+            return False, "incorrect password"
     except Exception as e:
         print(e)
-        return False
+        return False, e
