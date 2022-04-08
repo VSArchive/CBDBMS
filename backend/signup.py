@@ -22,7 +22,6 @@ def parent_signup(name, username, password, phone):
         "password": hashed_password,
         "phone": phone,
         "balance": 0,
-        "transaction_requests": [],
         "account_number": randint(1000000000, 10000000000),
         "createdAt": datetime.now()
     }
@@ -41,10 +40,9 @@ def child_signup(name, username, password, parent_account_number, dob):
         "name": name,
         "username": username,
         "password": hashed_password,
-        "parent_account_number": parent_account_number,
+        "parent_account_number": int(parent_account_number),
         "account_number": randint(1000000000, 10000000000),
         "createdAt": datetime.now(),
-        "transaction_requests": [],
         "balance": 0,
         "dob": dob
     }
