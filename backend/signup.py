@@ -13,12 +13,15 @@ parent_db = db.parent
 child_db = db.child
 
 
-def parent_signup(name, username, password, phone):
+def parent_signup(name, username, password, phone, email):
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    parent_db.create_index([("username", DESCENDING), ("phone", ASCENDING), ("account_number", ASCENDING)], unique=True)
+    parent_db.create_index(
+        [("username", DESCENDING), ("email", DESCENDING), ("phone", ASCENDING), ("account_number", ASCENDING)],
+        unique=True)
     parent_details = {
         "name": name,
         "username": username,
+        "email": email,
         "password": hashed_password,
         "phone": phone,
         "balance": 0,
@@ -33,12 +36,13 @@ def parent_signup(name, username, password, phone):
         return False
 
 
-def child_signup(name, username, password, parent_account_number, dob):
+def child_signup(name, username, password, parent_account_number, dob, email):
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     child_db.create_index([("username", DESCENDING), ("account_number", ASCENDING)], unique=True)
     parent_details = {
         "name": name,
         "username": username,
+        "email": email,
         "password": hashed_password,
         "parent_account_number": int(parent_account_number),
         "account_number": randint(1000000000, 10000000000),

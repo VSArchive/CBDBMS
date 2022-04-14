@@ -3,8 +3,11 @@ from datetime import datetime
 from random import randint
 
 import bcrypt
+import smtplib
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 load_dotenv()
 
@@ -144,7 +147,7 @@ def child_deposit(account_number, amount):
 
 
 # Child transaction request
-def child_transaction_request(username, password, amount, toAcc):
+def child_transaction_request(username, password, amount, to_acc):
     try:
         # Get child details
         child_details = child_db.find_one({"username": username})
@@ -162,8 +165,9 @@ def child_transaction_request(username, password, amount, toAcc):
 
                     # if less than limit do transaction
                     return child_transaction(username, amount,
-                                             child_details["account_number"], toAcc, "auto")
+                                             child_details["account_number"], to_acc, "auto")
                 else:
+                    transaction_request_id = randint(1, 1000000000000)
                     # else make a transaction request
                     transaction_request_db.create_index("transaction_request_id", unique=True)
                     transaction_request = {
@@ -171,10 +175,32 @@ def child_transaction_request(username, password, amount, toAcc):
                         "child_account_number": child_details["account_number"],
                         "amount": amount,
                         "parent_account_number": child_details["parent_account_number"],
-                        "transaction_request_id": randint(1, 1000000000000),
-                        "toAcc": toAcc
+                        "transaction_request_id": transaction_request_id,
+                        "toAcc": to_acc
                     }
                     transaction_request_db.insert_one(transaction_request)
+
+                    parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
+
+                    child_to_details = child_details.find_one({"account_number": to_acc})
+
+                    sender_address = os.getenv("SMTP_EMAIL")
+                    sender_pass = os.getenv("SMTP_PASS")
+                    mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
+                        "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
+                        "SERVER_URL") + transaction_request_id
+
+                    message = MIMEMultipart()
+                    message['From'] = sender_address
+                    message['To'] = parent_details["email"]
+                    message['Subject'] = 'Approve transaction amount of ' + str(amount) + "by" + child_details["name"]
+                    message.attach(MIMEText(mail_content, 'plain'))
+
+                    session = smtplib.SMTP('smtp.gmail.com', 587)
+                    session.starttls()
+                    session.login(sender_address, sender_pass)
+                    session.sendmail(sender_address, parent_details["email"], message.as_string())
+
                     return True, "transaction requested"
             else:
                 return False, "insufficient balance"
@@ -186,11 +212,11 @@ def child_transaction_request(username, password, amount, toAcc):
 
 
 # Child transaction
-def child_transaction(username, amount, fromAcc, toAcc, approved_by):
+def child_transaction(username, amount, from_acc, to_acc, approved_by):
     try:
-        child_details = child_db.find_one({"username": username, "account_number": fromAcc})
-        balance_update = {"$set": {"balance": child_details["balance"] - amount}}
-        child_db.update_one({"username": username, "account_number": fromAcc}, balance_update)
+        child_details = child_db.find_one({"username": username, "account_number": int(from_acc)})
+        balance_update = {"$set": {"balance": int(child_details["balance"]) - int(amount)}}
+        child_db.update_one({"username": username, "account_number": int(from_acc)}, balance_update)
 
         transaction_db.create_index("transaction_id", unique=True)
         transaction_details = {
@@ -198,8 +224,8 @@ def child_transaction(username, amount, fromAcc, toAcc, approved_by):
             "transaction_id": randint(1, 1000000000000),
             "transactionAt": datetime.now(),
             "amount": amount,
-            "from_account_number": fromAcc,
-            "to_account_number": toAcc,
+            "from_account_number": from_acc,
+            "to_account_number": to_acc,
             "by_type": "child",
             "to_type": "child",
             "transaction_type": "1to1",
@@ -207,10 +233,10 @@ def child_transaction(username, amount, fromAcc, toAcc, approved_by):
         }
         transaction_db.insert_one(transaction_details)
 
-        child_details = child_db.find_one({"account_number": toAcc})
+        child_details = child_db.find_one({"account_number": to_acc})
         if bool(child_details):
             balance_update = {"$set": {"balance": child_details["balance"] + amount}}
-            child_db.update_one({"username": username, "account_number": fromAcc}, balance_update)
+            child_db.update_one({"username": username, "account_number": to_acc}, balance_update)
             return True, "transaction success"
         else:
             return False, "account dose not exist"
@@ -266,6 +292,7 @@ def transactions_request_child_from_parent(parent_account_number):
 def delete_transaction_request(transaction_request_id):
     try:
         transaction_request_db.delete_one({"transaction_request_id": transaction_request_id})
+        return True, "Success"
     except Exception as e:
         print(e)
         return False, e
