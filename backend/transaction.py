@@ -165,7 +165,7 @@ def child_transaction_request(username, password, amount, to_acc):
 
                     # if less than limit do transaction
                     return child_transaction(username, amount,
-                                             child_details["account_number"], to_acc, "auto")
+                                             child_details["account_number"], to_acc, "auto", "auto")
                 else:
                     transaction_request_id = randint(1, 1000000000000)
                     # else make a transaction request
@@ -212,7 +212,7 @@ def child_transaction_request(username, password, amount, to_acc):
 
 
 # Child transaction
-def child_transaction(username, amount, from_acc, to_acc, approved_by):
+def child_transaction(username, amount, from_acc, to_acc, approved_by, message):
     try:
         child_details = child_db.find_one({"username": username, "account_number": int(from_acc)})
         balance_update = {"$set": {"balance": int(child_details["balance"]) - int(amount)}}
@@ -229,7 +229,8 @@ def child_transaction(username, amount, from_acc, to_acc, approved_by):
             "by_type": "child",
             "to_type": "child",
             "transaction_type": "1to1",
-            "approved_by": approved_by
+            "approved_by": approved_by,
+            "message": message
         }
         transaction_db.insert_one(transaction_details)
 
@@ -328,6 +329,35 @@ def transactions_by_parent(username, account_number):
         )
 
         return True, parent_sent, parent_received
+
+    except Exception as e:
+        print(e)
+        return False, e
+
+
+def transactions_by_child_from_parent(parent_account_number):
+    try:
+        child_details = child_db.find({"parent_account_number": parent_account_number})
+
+        child_sent = []
+        child_received = []
+
+        for i in child_details:
+            child_transactions_sent = transaction_db.find(
+                {"from_account_number": i["account_number"]}
+            )
+
+            for j in child_transactions_sent:
+                child_sent.append(j)
+
+            child_transactions_received = transaction_db.find(
+                {"to_account_number": i["account_number"]}
+            )
+
+            for j in child_transactions_received:
+                child_received.append(j)
+
+        return True, child_sent, child_received
 
     except Exception as e:
         print(e)
