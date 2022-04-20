@@ -116,34 +116,32 @@ def parent_deposit(account_number, amount):
 
 
 # Child transaction request
-def child_deposit_request(username, password, amount, message):
+def child_deposit_request(username, amount, message):
     try:
         # Get child details
         child_details = child_db.find_one({"username": username})
 
         # check if password is correct
-        if bcrypt.checkpw(password.encode("utf-8"), child_details["password"]):
-            transaction_request_id = randint(1, 1000000000000)
-            transaction_request_db.create_index("transaction_request_id", unique=True)
-            transaction_request = {
-                "child_username": username,
-                "child_account_number": child_details["account_number"],
-                "amount": amount,
-                "message": message,
-                "type": "deposit",
-                "parent_account_number": child_details["parent_account_number"],
-                "transaction_request_id": transaction_request_id,
-                "toAcc": child_details["account_number"]
-            }
-            transaction_request_db.insert_one(transaction_request)
+        transaction_request_id = randint(1, 1000000000000)
+        transaction_request_db.create_index("transaction_request_id", unique=True)
+        transaction_request = {
+            "child_username": username,
+            "child_account_number": child_details["account_number"],
+            "amount": amount,
+            "message": message,
+            "type": "deposit",
+            "parent_account_number": child_details["parent_account_number"],
+            "transaction_request_id": transaction_request_id,
+            "toAcc": child_details["account_number"]
+        }
+        transaction_request_db.insert_one(transaction_request)
 
-            parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
+        parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
 
-            mail(parent_details, child_details, amount, child_details, transaction_request_id)
+        mail(parent_details, child_details, amount, child_details, transaction_request_id)
 
-            return True, "transaction requested"
-        else:
-            return False, "password incorrect"
+        return True, "transaction requested"
+
     except Exception as e:
         print(e)
         return False, "error"
@@ -156,12 +154,12 @@ def mail(parent_details, child_to_details, amount, child_details, transaction_re
     if child_details == child_to_details:
         mail_content = "To deposit amount of " + str(amount) + " to " + child_to_details[
             "name"] + " click on this link " + os.getenv(
-            "SERVER_URL") + transaction_request_id
+            "SERVER_URL") + str(transaction_request_id)
 
     else:
         mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
             "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
-            "SERVER_URL") + transaction_request_id
+            "SERVER_URL") + str(transaction_request_id)
 
     message = MIMEMultipart()
     message['From'] = sender_address
@@ -244,7 +242,7 @@ def child_transaction_request(username, password, amount, to_acc, message):
 
                     parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
 
-                    child_to_details = child_details.find_one({"account_number": to_acc})
+                    child_to_details = child_db.find_one({"account_number": to_acc})
 
                     mail(parent_details, child_to_details, amount, child_details, transaction_request_id)
 
