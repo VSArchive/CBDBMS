@@ -115,7 +115,67 @@ def parent_deposit(account_number, amount):
         return False, e
 
 
-# Deposit to parent account
+# Child transaction request
+def child_deposit_request(username, password, amount, message):
+    try:
+        # Get child details
+        child_details = child_db.find_one({"username": username})
+
+        # check if password is correct
+        if bcrypt.checkpw(password.encode("utf-8"), child_details["password"]):
+            transaction_request_id = randint(1, 1000000000000)
+            transaction_request_db.create_index("transaction_request_id", unique=True)
+            transaction_request = {
+                "child_username": username,
+                "child_account_number": child_details["account_number"],
+                "amount": amount,
+                "message": message,
+                "type": "deposit",
+                "parent_account_number": child_details["parent_account_number"],
+                "transaction_request_id": transaction_request_id,
+                "toAcc": child_details["account_number"]
+            }
+            transaction_request_db.insert_one(transaction_request)
+
+            parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
+
+            mail(parent_details, child_details, amount, child_details, transaction_request_id)
+
+            return True, "transaction requested"
+        else:
+            return False, "password incorrect"
+    except Exception as e:
+        print(e)
+        return False, "error"
+
+
+def mail(parent_details, child_to_details, amount, child_details, transaction_request_id):
+    sender_address = os.getenv("SMTP_EMAIL")
+    sender_pass = os.getenv("SMTP_PASS")
+
+    if child_details == child_to_details:
+        mail_content = "To deposit amount of " + str(amount) + " to " + child_to_details[
+            "name"] + " click on this link " + os.getenv(
+            "SERVER_URL") + transaction_request_id
+
+    else:
+        mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
+            "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
+            "SERVER_URL") + transaction_request_id
+
+    message = MIMEMultipart()
+    message['From'] = sender_address
+    message['To'] = parent_details["email"]
+    message['Subject'] = 'Approve transaction amount of ' + str(amount) + "by" + child_details["name"]
+    message.attach(MIMEText(mail_content, 'plain'))
+
+    session = smtplib.SMTP('smtp.gmail.com', 587)
+    session.starttls()
+    session.login(sender_address, sender_pass)
+    session.sendmail(sender_address, parent_details["email"], message.as_string())
+
+
+# Deposit to child account
 def child_deposit(account_number, amount):
     try:
         # Get Child Details
@@ -147,7 +207,7 @@ def child_deposit(account_number, amount):
 
 
 # Child transaction request
-def child_transaction_request(username, password, amount, to_acc):
+def child_transaction_request(username, password, amount, to_acc, message):
     try:
         # Get child details
         child_details = child_db.find_one({"username": username})
@@ -165,7 +225,7 @@ def child_transaction_request(username, password, amount, to_acc):
 
                     # if less than limit do transaction
                     return child_transaction(username, amount,
-                                             child_details["account_number"], to_acc, "auto", "auto")
+                                             child_details["account_number"], to_acc, "auto", message)
                 else:
                     transaction_request_id = randint(1, 1000000000000)
                     # else make a transaction request
@@ -174,6 +234,8 @@ def child_transaction_request(username, password, amount, to_acc):
                         "child_username": username,
                         "child_account_number": child_details["account_number"],
                         "amount": amount,
+                        "message": message,
+                        "type": "transfer",
                         "parent_account_number": child_details["parent_account_number"],
                         "transaction_request_id": transaction_request_id,
                         "toAcc": to_acc
@@ -184,22 +246,7 @@ def child_transaction_request(username, password, amount, to_acc):
 
                     child_to_details = child_details.find_one({"account_number": to_acc})
 
-                    sender_address = os.getenv("SMTP_EMAIL")
-                    sender_pass = os.getenv("SMTP_PASS")
-                    mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
-                        "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
-                        "SERVER_URL") + transaction_request_id
-
-                    message = MIMEMultipart()
-                    message['From'] = sender_address
-                    message['To'] = parent_details["email"]
-                    message['Subject'] = 'Approve transaction amount of ' + str(amount) + "by" + child_details["name"]
-                    message.attach(MIMEText(mail_content, 'plain'))
-
-                    session = smtplib.SMTP('smtp.gmail.com', 587)
-                    session.starttls()
-                    session.login(sender_address, sender_pass)
-                    session.sendmail(sender_address, parent_details["email"], message.as_string())
+                    mail(parent_details, child_to_details, amount, child_details, transaction_request_id)
 
                     return True, "transaction requested"
             else:
@@ -237,7 +284,7 @@ def child_transaction(username, amount, from_acc, to_acc, approved_by, message):
         child_details = child_db.find_one({"account_number": to_acc})
         if bool(child_details):
             balance_update = {"$set": {"balance": child_details["balance"] + amount}}
-            child_db.update_one({"username": username, "account_number": to_acc}, balance_update)
+            child_db.update_one({"username": child_details["username"], "account_number": to_acc}, balance_update)
             return True, "transaction success"
         else:
             return False, "account dose not exist"
