@@ -195,6 +195,17 @@ def child_deposit(account_number, amount):
         child_details = child_db.find_one({"account_number": account_number})
 
         if bool(child_details):
+            parent_details = parent_db.find_one(
+                {"account_number": child_details["parent_account_number"]})
+
+            if amount > parent_details["balance"]:
+                return False, "insufficient balance"
+
+            balance_update = {
+                "$set": {"balance": parent_details["balance"] - amount}}
+            parent_db.update_one(
+                {"username": parent_details["username"]}, balance_update)
+
             # Update Child Balance
             child_details_update = {
                 "$set": {"balance": child_details["balance"] + amount}}
@@ -213,11 +224,6 @@ def child_deposit(account_number, amount):
                 "transaction_type": "deposit"
             }
             transaction_db.insert_one(transaction_details)
-
-            balance_update = {
-                "$set": {"balance": child_details["balance"] + amount}}
-            child_db.update_one(
-                {"username": child_details["username"]}, balance_update)
 
             return True, "transaction success"
         else:
