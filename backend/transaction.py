@@ -172,7 +172,8 @@ def mail(parent_details, child_to_details, amount, child_details, transaction_re
     else:
         mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
             "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
-            "SERVER_URL") + "/approve/" + str(transaction_request_id)
+            "SERVER_URL") + "/approve/" + str(transaction_request_id) + " and to reject transaction click on this link " + os.getenv(
+            "SERVER_URL") + "/deny/" + str(transaction_request_id)
 
     message = MIMEMultipart()
     message['From'] = sender_address
