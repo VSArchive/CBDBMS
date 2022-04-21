@@ -219,6 +219,8 @@ def child_deposit(account_number, amount):
                 "transaction_id": randint(1, 1000000000000),
                 "transactionAt": datetime.now(),
                 "transaction_date": datetime.today(),
+                "to_account_number": child_details["account_number"],
+                "from_account_number": child_details["parent_account_number"],
                 "amount": amount,
                 "by_type": "child",
                 "transaction_type": "deposit"
