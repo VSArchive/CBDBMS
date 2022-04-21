@@ -35,8 +35,10 @@ def parent_transaction(username, password, amount, to_account_number, to_account
                 to_account_type == "child" or to_account_type == "parent"):
             # update from account balance
             if parent_details["balance"] >= amount:
-                parent_details_update = {"$set": {"balance": int(parent_details["balance"] - amount)}}
-                parent_db.update_one({"username": username}, parent_details_update)
+                parent_details_update = {
+                    "$set": {"balance": int(parent_details["balance"] - amount)}}
+                parent_db.update_one(
+                    {"username": username}, parent_details_update)
 
                 # Update as Transaction
                 transaction_db.create_index("transaction_id", unique=True)
@@ -57,21 +59,27 @@ def parent_transaction(username, password, amount, to_account_number, to_account
 
                 if to_account_type == "parent":
                     # Get TO account Details
-                    to_parent_details = parent_db.find_one({"account_number": to_account_number})
+                    to_parent_details = parent_db.find_one(
+                        {"account_number": to_account_number})
                     if bool(to_parent_details):
                         # Update TO account Balance
-                        to_parent_details_update = {"$set": {"balance": to_parent_details["balance"] + amount}}
-                        parent_db.update_one({"account_number": to_account_number}, to_parent_details_update)
+                        to_parent_details_update = {
+                            "$set": {"balance": to_parent_details["balance"] + amount}}
+                        parent_db.update_one(
+                            {"account_number": to_account_number}, to_parent_details_update)
                     else:
                         return False, "account dose not exist"
                 elif to_account_type == "child":
                     # Get TO account Details
-                    to_child_details = child_db.find_one({"account_number": to_account_number})
+                    to_child_details = child_db.find_one(
+                        {"account_number": to_account_number})
 
                     if bool(to_child_details):
                         # Update TO account Balance
-                        to_child_details_update = {"$set": {"balance": to_child_details["balance"] + amount}}
-                        child_db.update_one({"account_number": to_account_number}, to_child_details_update)
+                        to_child_details_update = {
+                            "$set": {"balance": to_child_details["balance"] + amount}}
+                        child_db.update_one(
+                            {"account_number": to_account_number}, to_child_details_update)
                     else:
                         return False, "account dose not exist"
                 return True, "transaction success"
@@ -92,8 +100,10 @@ def parent_deposit(account_number, amount):
 
         if bool(parent_details):
             # Update Parent Balance
-            parent_details_update = {"$set": {"balance": parent_details["balance"] + amount}}
-            parent_db.update_one({"account_number": account_number}, parent_details_update)
+            parent_details_update = {
+                "$set": {"balance": parent_details["balance"] + amount}}
+            parent_db.update_one(
+                {"account_number": account_number}, parent_details_update)
 
             # Update as Transaction
             transaction_db.create_index("transaction_id", unique=True)
@@ -123,7 +133,8 @@ def child_deposit_request(username, amount, message):
 
         # check if password is correct
         transaction_request_id = randint(1, 1000000000000)
-        transaction_request_db.create_index("transaction_request_id", unique=True)
+        transaction_request_db.create_index(
+            "transaction_request_id", unique=True)
         transaction_request = {
             "child_username": username,
             "child_account_number": child_details["account_number"],
@@ -136,9 +147,11 @@ def child_deposit_request(username, amount, message):
         }
         transaction_request_db.insert_one(transaction_request)
 
-        parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
+        parent_details = parent_db.find_one(
+            {"account_number": child_details["parent_account_number"]})
 
-        mail(parent_details, child_details, amount, child_details, transaction_request_id)
+        mail(parent_details, child_details, amount,
+             child_details, transaction_request_id)
 
         return True, "transaction requested"
 
@@ -154,23 +167,25 @@ def mail(parent_details, child_to_details, amount, child_details, transaction_re
     if child_details == child_to_details:
         mail_content = "To deposit amount of " + str(amount) + " to " + child_to_details[
             "name"] + " click on this link " + os.getenv(
-            "SERVER_URL") + str(transaction_request_id)
+            "SERVER_URL") + "/approve/" + str(transaction_request_id)
 
     else:
         mail_content = "To approve transaction amount of " + str(amount) + " by " + child_details[
             "name"] + " to " + child_to_details["name"] + " click on this link " + os.getenv(
-            "SERVER_URL") + str(transaction_request_id)
+            "SERVER_URL") + "/approve/" + str(transaction_request_id)
 
     message = MIMEMultipart()
     message['From'] = sender_address
     message['To'] = parent_details["email"]
-    message['Subject'] = 'Approve transaction amount of ' + str(amount) + "by" + child_details["name"]
+    message['Subject'] = 'Approve transaction amount of ' + \
+        str(amount) + "by" + child_details["name"]
     message.attach(MIMEText(mail_content, 'plain'))
 
     session = smtplib.SMTP('smtp.gmail.com', 587)
     session.starttls()
     session.login(sender_address, sender_pass)
-    session.sendmail(sender_address, parent_details["email"], message.as_string())
+    session.sendmail(
+        sender_address, parent_details["email"], message.as_string())
 
 
 # Deposit to child account
@@ -181,8 +196,10 @@ def child_deposit(account_number, amount):
 
         if bool(child_details):
             # Update Child Balance
-            child_details_update = {"$set": {"balance": child_details["balance"] + amount}}
-            child_db.update_one({"account_number": account_number}, child_details_update)
+            child_details_update = {
+                "$set": {"balance": child_details["balance"] + amount}}
+            child_db.update_one(
+                {"account_number": account_number}, child_details_update)
 
             # Update as Transaction
             transaction_db.create_index("transaction_id", unique=True)
@@ -196,6 +213,12 @@ def child_deposit(account_number, amount):
                 "transaction_type": "deposit"
             }
             transaction_db.insert_one(transaction_details)
+
+            balance_update = {
+                "$set": {"balance": child_details["balance"] + amount}}
+            child_db.update_one(
+                {"username": child_details["username"]}, balance_update)
+
             return True, "transaction success"
         else:
             return False, "account dose not exist"
@@ -215,7 +238,8 @@ def child_transaction_request(username, password, amount, to_acc, message):
             if child_details["balance"] >= amount:
                 # check child's today's transactions
                 child_today_transaction = transaction_db.find(
-                    {"from_account_number": child_details["account_number"], "transaction_date": datetime.today()}
+                    {"from_account_number": child_details["account_number"],
+                        "transaction_date": datetime.today()}
                 )
                 amount_spent_today = 0
                 for i in child_today_transaction:
@@ -227,7 +251,8 @@ def child_transaction_request(username, password, amount, to_acc, message):
                 else:
                     transaction_request_id = randint(1, 1000000000000)
                     # else make a transaction request
-                    transaction_request_db.create_index("transaction_request_id", unique=True)
+                    transaction_request_db.create_index(
+                        "transaction_request_id", unique=True)
                     transaction_request = {
                         "child_username": username,
                         "child_account_number": child_details["account_number"],
@@ -240,11 +265,14 @@ def child_transaction_request(username, password, amount, to_acc, message):
                     }
                     transaction_request_db.insert_one(transaction_request)
 
-                    parent_details = parent_db.find_one({"account_number": child_details["parent_account_number"]})
+                    parent_details = parent_db.find_one(
+                        {"account_number": child_details["parent_account_number"]})
 
-                    child_to_details = child_db.find_one({"account_number": to_acc})
+                    child_to_details = child_db.find_one(
+                        {"account_number": to_acc})
 
-                    mail(parent_details, child_to_details, amount, child_details, transaction_request_id)
+                    mail(parent_details, child_to_details, amount,
+                         child_details, transaction_request_id)
 
                     return True, "transaction requested"
             else:
@@ -259,9 +287,12 @@ def child_transaction_request(username, password, amount, to_acc, message):
 # Child transaction
 def child_transaction(username, amount, from_acc, to_acc, approved_by, message):
     try:
-        child_details = child_db.find_one({"username": username, "account_number": int(from_acc)})
-        balance_update = {"$set": {"balance": int(child_details["balance"]) - int(amount)}}
-        child_db.update_one({"username": username, "account_number": int(from_acc)}, balance_update)
+        child_details = child_db.find_one(
+            {"username": username, "account_number": int(from_acc)})
+        balance_update = {"$set": {"balance": int(
+            child_details["balance"]) - int(amount)}}
+        child_db.update_one(
+            {"username": username, "account_number": int(from_acc)}, balance_update)
 
         transaction_db.create_index("transaction_id", unique=True)
         transaction_details = {
@@ -281,8 +312,10 @@ def child_transaction(username, amount, from_acc, to_acc, approved_by, message):
 
         child_details = child_db.find_one({"account_number": to_acc})
         if bool(child_details):
-            balance_update = {"$set": {"balance": child_details["balance"] + amount}}
-            child_db.update_one({"username": child_details["username"], "account_number": to_acc}, balance_update)
+            balance_update = {
+                "$set": {"balance": child_details["balance"] + amount}}
+            child_db.update_one(
+                {"username": child_details["username"], "account_number": to_acc}, balance_update)
             return True, "transaction success"
         else:
             return False, "account dose not exist"
@@ -337,7 +370,8 @@ def transactions_request_child_from_parent(parent_account_number):
 
 def delete_transaction_request(transaction_request_id):
     try:
-        transaction_request_db.delete_one({"transaction_request_id": transaction_request_id})
+        transaction_request_db.delete_one(
+            {"transaction_request_id": transaction_request_id})
         return True, "Success"
     except Exception as e:
         print(e)
@@ -346,7 +380,8 @@ def delete_transaction_request(transaction_request_id):
 
 def transactions_by_child(username, account_number):
     try:
-        child_details = child_db.find_one({"username": username, "account_number": account_number})
+        child_details = child_db.find_one(
+            {"username": username, "account_number": account_number})
         child_sent = transaction_db.find(
             {"from_account_number": child_details["account_number"]}
         )
@@ -364,7 +399,8 @@ def transactions_by_child(username, account_number):
 
 def transactions_by_parent(username, account_number):
     try:
-        parent_details = parent_db.find_one({"username": username, "account_number": account_number})
+        parent_details = parent_db.find_one(
+            {"username": username, "account_number": account_number})
         parent_sent = transaction_db.find(
             {"from_account_number": parent_details["account_number"]}
         )
@@ -382,7 +418,8 @@ def transactions_by_parent(username, account_number):
 
 def transactions_by_child_from_parent(parent_account_number):
     try:
-        child_details = child_db.find({"parent_account_number": parent_account_number})
+        child_details = child_db.find(
+            {"parent_account_number": parent_account_number})
 
         child_sent = []
         child_received = []
